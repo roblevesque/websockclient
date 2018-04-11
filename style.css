@@ -45,6 +45,7 @@ ul {
 
 #terminal {
   position: fixed;
+  width: 75%;
   margin: 0;
   padding: 0;
   border: none;
@@ -55,7 +56,10 @@ ul {
   bottom: 3em;
   box-shadow: 0 0 0.2em 0.1em gray;
   overflow: hidden;
+  float: left;
 }
+
+#containerInterface { width: 20%; float:right; padding-top: 3em; padding-right: 1vw;}
 
 #output {
   overflow-y: auto;
@@ -65,7 +69,6 @@ ul {
   position: absolute;
   margin: 0;
   border: 0;
-  padding: 0.5em 0.5% 0.5em 0.5%;
   left: 0;
   width: 99%;
   top: 0;
@@ -111,3 +114,41 @@ ul {
   bottom: 0;
   height: 3em;
 }
+
+.ui-progressbar {
+  width: 98%;
+  position:relative;
+  height: 1em;
+}
+
+.ui-progressbar .ui-progressbar-value {
+  border-right: 0;
+}
+.ibuild-bar-label {
+  position: absolute;
+  left: 25%;
+  top: 4px;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000;
+  color: #fff;
+}
+.ui-widget-header {
+   background: #333;
+   font-weight: bold;
+}
+
+.ui-widget.ui-widget-content {
+  border: 1px solid #000000;
+  background-color: #3a3a3a;
+
+
+}
+
+fieldset legend {
+  font-weight: bold;
+  color: #FFF;
+  text-shadow: 1px 1px 0 #000;
+
+}
+
+fieldset { background-color: #353333;}

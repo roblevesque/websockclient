@@ -3,6 +3,7 @@
 
 <link rel="stylesheet" href="ansi.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <base target="_blank">
 
 <title>Minimal Websocket JavaScript Client</title></head>
@@ -24,15 +25,19 @@
   <div id="prompt" class="ansi-37 ansi-40"></div>
   <textarea id="input" autocomplete="off" autofocus></textarea>
 </div>
+<div id="containerInterface"></div>
 
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript" src="wsclient.js"></script>
+<script type="text/javascript" src="local.js"></script>
 <script type="text/javascript">
   //var serverAddress = window.location.hostname;
-  var serverAddress = "grapenut.org";
+  var serverAddress = "localhost";
   var serverSSL = window.location.protocol == "https:";
   var serverProto = serverSSL ? "wss://" : "ws://";
   var serverPort = serverSSL ? '4202' : '4201';
-  
+
   var customUrl = window.location.search.substring(1) ? window.location.search.substring(1) : serverAddress + ":" + serverPort;
 
   // The connection URL is ws://host:port/wsclient (or wss:// for SSL connections)
@@ -57,7 +62,7 @@
       output.appendMessage('logMessage', '%% Reconnecting to server...');
     }
   }
-  
+
   // just log a standard message on these socket status events
   conn.onOpen = function (evt) { output.appendMessage('logMessage', '%% Connected.'); };
   conn.onError = function (evt) { output.appendMessage('logMessage', '%% Connection error!'); console.log(evt); };
@@ -68,31 +73,30 @@
   conn.onHTML = function (html) { output.appendHTML(html); };
   conn.onPueblo = function (html) { output.appendPueblo(html); };
   conn.onPrompt = function (text) { cmdprompt.clear(); cmdprompt.appendText(text + '\r\n'); };
-  
+
   // handle incoming JSON objects. requires server specific implementation
-  conn.onObject = function (obj) { console.log('unhandled JSON object' + obj); };
+  conn.onObject = function (obj) { interfaceBuilder.parse( obj ); };
 
   // pueblo command links, prompt for user input and replace ?? token if present
   output.onCommand = function(cmd) { sendCommand(WSClient.parseCommand(cmd)); };
 
   // enter key passthrough from WSClient.pressKey
   input.onEnter = function(cmd) { sendCommand(cmd); };
-  
+
   // escape key passthrough from WSClient.pressKey
   input.onEscape = function () { this.clear(); };
-  
+
   // input key event callbacks. here we show the defaults
   // provided by WSClient.pressKey and WSClient.releaseKey
   // input.onKeyDown = function(e) { WSClient.pressKey(this, e); };
   // input.onKeyUp = function(e) { WSClient.releaseKey(this, e); };
-  
+
   // which keys are used for cycling through command history?
   // here we show the default keys, ctrl+p and ctrl+n
   // input.keyCycleForward = function(key) { return (key.code === 78 && key.ctrl); }; // ctrl+n
   // input.keyCycleBackward = function(key) { return (key.code === 80 && key.ctrl); }; // ctrl+p
-  
+
 </script>
 
 </body>
 </html>
-
