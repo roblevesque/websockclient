@@ -25,13 +25,6 @@ textarea {
   font-size: inherit;
 }
 
-ul {
-  display: flex;
-  flex-direction: column;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
 
 .localEcho {
   color: yellow;
@@ -118,7 +111,7 @@ ul {
 .ui-progressbar {
   width: 98%;
   position:relative;
-  height: 1em;
+  height: 1.5em;
 }
 
 .ui-progressbar .ui-progressbar-value {
@@ -152,3 +145,24 @@ fieldset legend {
 }
 
 fieldset { background-color: #353333;}
+
+#tabgroup {
+    padding: 0px;
+    background: #ddd;
+}
+#tabgroup .ui-tabs-nav {
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+#tabgroup .ui-tabs-panel {
+    margin: 0em 0.2em 0.2em 0.2em;
+}
+
+
+
+.ui-tabs .ui-tabs-nav .ui-tabs-anchor  {
+  width: auto;
+}

@@ -1,8 +1,10 @@
-@@ IBUILD Machine
+@@ IBUILD Machine 
 @create IBUILD Machine
 @set IBUILD Machine = WIZARD
-&FN.BUILDBAR IBUILD Machine=[@@(%0:Name\, %1:Current\, %2:Max\, %3:Controlgroup)]u(fn.sendobject,json(object,i_type,json(string,bar),name,json(string,edit(%0,%b,_)),bar_current,json(string,%1),bar_max,json(string,%2),group,json(string,edit(%3,%b,_))))
-&FN.BUILDGROUP IBUILD Machine=[@@(%0:GroupName)]u(fn.sendobject,json(object,i_type,json(string,group),name,json(string,edit(%0,%b,_))))
+&FN.BUILDBAR IBUILD Machine=[@@(%0:Name\, %1:Current\, %2:Max\, %3:Parent)]u(fn.sendobject,json(object,i_type,json(string,bar),name,json(string,edit(%0,%b,_)),bar_current,json(string,%1),bar_max,json(string,%2),parent,json(string,edit(%3,%b,_))))
+&FN.BUILDGROUP IBUILD Machine=[@@(%0:GroupName\%1:Parent)]u(fn.sendobject,json(object,i_type,json(string,group),name,json(string,edit(%0,%b,_)),parent,json(string,edit(%1,%b,_) ))
 &FN.BUILDMODAL IBUILD Machine=[@@(%0:Title\, %1:Message\, %2:Choice1Title\, %3:Choice1cmd, %4:Choice2Title, %5,Choice2Cmd)]u(fn.sendobject,json(object,i_type,json(string,modal),title,json(string,%0),message,json(string,%1),choice1title,json(string,%2),choice1cmd,json(string,%3),choice2title,json(string,%4),choice2cmd,json(string,%5)))
-&fn.CLEAR IBUILD Machine=[@@(N/A)]u(fn.sendobject,json(object,i_type,json(string,clear)))
+&FN.BUILDTAB IBUILD Machine=[@@(%0:TabName\%1:Parent)]u(fn.sendobject,json(object,i_type,json(string,tab),name,json(string,edit(%0,%b,_)),parent,json(string,edit(%1,%b,_) ))
+&FN.BUILDTABGROUP IBUILD Machine=[@@(%0:TabName\%1:Parent)]u(fn.sendobject,json(object,i_type,json(string,tabgroup),name,json(string,edit(%0,%b,_)),parent,json(string,edit(%1,%b,_) ))
+&FN.CLEAR IBUILD Machine=[@@(N/A)]u(fn.sendobject,json(object,i_type,json(string,clear)))
 &FN.SENDOBJECT IBUILD Machine=[@@(%0:Object)]wsjson(json(object,m_type,json(string,IBUILD),data,%0))

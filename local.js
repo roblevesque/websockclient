@@ -26,6 +26,12 @@ return {
         case "modal":
           this.build_modal( obj.data );
           break;
+        case "tabgroup":
+          this.build_tabgroup( obj.data );
+          break;
+        case "tab":
+          this.build_tab( obj.data );
+          break;
         default:
           console.log( "Debug: Undefined i_type: " + obj.data.i_type )
           console.log( obj )
@@ -37,9 +43,13 @@ return {
   build_group:function ( obj ) {  // Build group
     var name = "GRP-" + obj.name;
     var current = document.getElementById(name);
+    if ( obj.parent != null | obj.parent != undefined )
+      var container = obj.parent;
+    else
+      var container = settings.interfaceContainer
     if (current == undefined ) {
       var group = `<fieldset><legend>${obj.name.replaceAll("_"," ")}</legend><div id="${name}"></div></fieldset>`;
-      $("#" + settings.interfaceContainer).html( $("#" + settings.interfaceContainer).html() + group );
+      $("#" + container).append( group );
     }
   }, // End build_group
 
@@ -71,19 +81,19 @@ return {
       buttons: modal_buttons
     });
   }, // End Build Modal
-  
+
   build_bar:function( obj ) { // Build bar
       var name = "BAR-" + obj.name;
       var percent = (obj.bar_current / obj.bar_max) * 100;
       var current = document.getElementById(name);
       var color = "#b7b7b7";
-      if ( obj.group != null | obj.group != undefined )
-        var container = "GRP-" + obj.group;
+      if ( obj.parent != null | obj.parent != undefined )
+        var container = obj.parent;
       else
         var container = settings.interfaceContainer
       if ( current == undefined ) {
         var progress = "<div id=\"" + name + "\"><div class=\"" + name + "-label ibuild-bar-label\">" + obj.name.replaceAll("_"," ")  + "</div></div>";
-        $("#" + container).html( $("#" + container).html() + progress );
+        $("#" + container).append( progress );
       }
       switch ( Math.floor(percent / 10) ) {
         case 0:
@@ -116,7 +126,32 @@ return {
 
       $('.' + name + "-label").text(obj.name.replaceAll("_"," ") + " - \( " + percent.toFixed(0) +"% \)" );
 
-  } // End build_bar
+  }, // End build_bar
+
+  build_tabgroup:function( obj ) { // Build Tabgroup
+    var name = "TGP-" + obj.name;
+    var current = document.getElementById(name);
+    if (current == undefined ) {
+      var group = `<div id="${name}" class="tabgroup"><ul></ul></div>`
+      $("#" + settings.interfaceContainer).append( group );
+      $( `#${name}` ).tabs();
+    }
+  }, // End Build Tabgroup
+
+  build_tab:function( obj ) { //Add tab to Tabgroup
+    var name = `TAB-${obj.name}`;
+    var tabbie = `<li><a href="#${name}">${obj.name.replaceAll("_"," ")}</a></li>`;
+    var tabcontents = `<div id=${name}></div>`;
+    var current = document.getElementById(name);
+    if (current == undefined ) {
+      $(`#TGP-${obj.parent} ul`).append( tabbie );
+      $(`#TGP-${obj.parent}`).append( tabcontents );
+      $( `#TGP-${obj.parent}` ).tabs("refresh");
+    }
+
+
+  } // End add tab
+
 
 }  // </ interfaceBuilder > return
 }());
