@@ -23,8 +23,12 @@ return {
         case "clear":
           this.clear();
           break;
+        case "modal":
+          this.build_modal( obj.data );
+          break;
         default:
           console.log( "Debug: Undefined i_type: " + obj.data.i_type )
+          console.log( obj )
       }
   },
   clear:function( obj ){ // Clear interface elements
@@ -37,8 +41,37 @@ return {
       var group = `<fieldset><legend>${obj.name.replaceAll("_"," ")}</legend><div id="${name}"></div></fieldset>`;
       $("#" + settings.interfaceContainer).html( $("#" + settings.interfaceContainer).html() + group );
     }
-
   }, // End build_group
+
+  build_modal:function( obj ) { // Build Modal
+    var modal_buttons = {};
+    var modal = `<div id="dialog-confirm" title="${obj.title}">
+                <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>${obj.message}</p>
+                </div>`;
+    $('body').append( modal );
+
+    modal_buttons[obj.choice1title] = function() {
+      $( this ).dialog( "close" );
+      sendCommand( obj.choice1cmd );
+      $("#dialog-confirm").remove();
+    }
+
+    modal_buttons[obj.choice2title] =function() {
+        $( this ).dialog( "close" );
+        sendCommand( obj.choice2cmd );
+        $("#dialog-confirm").remove();
+
+    }
+
+    $( "#dialog-confirm" ).dialog({
+      resizable: false,
+      height: "auto",
+      width: 400,
+      modal: true,
+      buttons: modal_buttons
+    });
+  }, // End Build Modal
+  
   build_bar:function( obj ) { // Build bar
       var name = "BAR-" + obj.name;
       var percent = (obj.bar_current / obj.bar_max) * 100;
