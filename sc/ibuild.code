@@ -1,0 +1,6 @@
+@@ IBUILD Machine
+@create IBUILD Machine
+@set IBUILD Machine = WIZARD
+&FN.BUILDBAR IBUILD Machine=[@@(%0:Name\, %1:Current\, %2:Max\, %3:Controlgroup)]u(fn.sendobject,json(object,i_type,json(string,bar),name,json(string,edit(%0,%b,_)),bar_current,json(string,%1),bar_max,json(string,%2),group,json(string,edit(%3,%b,_))))
+&FN.BUILDGROUP IBUILD Machine=[@@(%0:GroupName)]u(fn.sendobject,json(object,i_type,json(string,group),name,json(string,edit(%0,%b,_))))
+&FN.SENDOBJECT IBUILD Machine=[@@(%0:Object)]wsjson(json(object,m_type,json(string,IBUILD),data,%0))
