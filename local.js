@@ -5,10 +5,6 @@ String.prototype.replaceAll = function(target, replacement) {
 
 var interfaceBuilder = (function() {
 
-var settings = {
- 'interfaceContainer': "containerInterface"
-};
-
 return {
   parse:function( obj ) {  // Parse inbound JSON object
     if ( obj.m_type  != "IBUILD" )

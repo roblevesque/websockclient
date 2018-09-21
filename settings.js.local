@@ -1,0 +1,6 @@
+var settings = {
+ 'serverAddress' : 'changeme',
+ 'settings.port' : '4201',
+ 'settings.sslPort' : '4202',
+ 'interfaceContainer': "containerInterface"
+};
