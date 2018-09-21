@@ -12,7 +12,7 @@ var settings = {
 return {
   parse:function( obj ) {  // Parse inbound JSON object
     if ( obj.m_type  != "IBUILD" )
-      return;  // Not for us
+      return;  // Not for uss
       switch ( obj.data.i_type ) {
         case "bar":
           this.build_bar( obj.data );
@@ -41,7 +41,7 @@ return {
     $("#" + settings.interfaceContainer).html("");
   }, // End clear
   build_group:function ( obj ) {  // Build group
-    var name = "GRP-" + obj.name;
+    var name = obj.name;
     var current = document.getElementById(name);
     if ( obj.parent != null | obj.parent != undefined )
       var container = obj.parent;
@@ -83,7 +83,7 @@ return {
   }, // End Build Modal
 
   build_bar:function( obj ) { // Build bar
-      var name = "BAR-" + obj.name;
+      var name = obj.name;
       var percent = (obj.bar_current / obj.bar_max) * 100;
       var current = document.getElementById(name);
       var color = "#b7b7b7";
@@ -129,7 +129,7 @@ return {
   }, // End build_bar
 
   build_tabgroup:function( obj ) { // Build Tabgroup
-    var name = "TGP-" + obj.name;
+    var name =  obj.name;
     var current = document.getElementById(name);
     if (current == undefined ) {
       var group = `<div id="${name}" class="tabgroup"><ul></ul></div>`
@@ -139,7 +139,7 @@ return {
   }, // End Build Tabgroup
 
   build_tab:function( obj ) { //Add tab to Tabgroup
-    var name = `TAB-${obj.name}`;
+    var name = obj.name;
     var tabbie = `<li><a href="#${name}">${obj.name.replaceAll("_"," ")}</a></li>`;
     var tabcontents = `<div id=${name}></div>`;
     var current = document.getElementById(name);
