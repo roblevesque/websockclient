@@ -32,12 +32,14 @@
 <script type="text/javascript" src="wsclient.js"></script>
 <script type="text/javascript" src="local.js"></script>
 <script type="text/javascript" src="settings.js"></script>
+<script src="https://cdn.zingchart.com/zingchart.min.js"></script> <!-- For Graphs -->
+
 <script type="text/javascript">
   //var serverAddress = window.location.hostname;
   var serverAddress = settings.serverAddress;
   var serverSSL = window.location.protocol == "https:";
   var serverProto = serverSSL ? "wss://" : "ws://";
-  var serverPort = serverSSL ? settings.port : settings.sslport;
+  var serverPort = serverSSL ? settings.sslPort : settings.port;
 
   var customUrl = window.location.search.substring(1) ? window.location.search.substring(1) : serverAddress + ":" + serverPort;
 
@@ -98,6 +100,5 @@
   // input.keyCycleBackward = function(key) { return (key.code === 80 && key.ctrl); }; // ctrl+p
 
 </script>
-<script src="https://cdn.zingchart.com/zingchart.min.js"></script> <!-- For Graphs -->
 </body>
 </html>

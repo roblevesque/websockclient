@@ -1,4 +1,4 @@
-@@ IBUILD Machine 
+@@ IBUILD Machine
 @create IBUILD Machine
 @set IBUILD Machine = WIZARD
 &FN.BUILDBAR IBUILD Machine=[@@(%0:Name\, %1:Current\, %2:Max\, %3:Parent)]u(fn.sendobject,json(object,i_type,json(string,bar),name,json(string,edit(%0,%b,_)),bar_current,json(string,%1),bar_max,json(string,%2),parent,json(string,edit(%3,%b,_))))
@@ -8,3 +8,5 @@
 &FN.BUILDTABGROUP IBUILD Machine=[@@(%0:TabName\%1:Parent)]u(fn.sendobject,json(object,i_type,json(string,tabgroup),name,json(string,edit(%0,%b,_)),parent,json(string,edit(%1,%b,_) ))
 &FN.CLEAR IBUILD Machine=[@@(N/A)]u(fn.sendobject,json(object,i_type,json(string,clear)))
 &FN.SENDOBJECT IBUILD Machine=[@@(%0:Object)]wsjson(json(object,m_type,json(string,IBUILD),data,%0))
+&FN.BUILDPIECHART IBUILD Machine=[@@(\%0:Name,\%1:Parent,\%2:Type (pie,pie3d,ring,ring3d),\%3-9: Chart elements)][null(setq(vals,json(array))[iter(rest(rest(rest(registers(,args)))),setq(vals,json_mod(%q<vals>,insert,$\[[sub(#@,1)]\],v(%i0))))])][u(fn.sendobject,json(object,i_type,json(string,piechart),name,json(string,edit(%0,%b,_)),parent,json(string,edit(%1,%b,_)),type,json(string,%2),values,%q<vals>))]
+&FN.BUILDPIECHART.ELEMENT IBUILD Machine=[@@(\%0:Name,\%1:Value,\%2:Color)]json(object,name,json(string,%0),value,json(number,%1),color,json(string,%2))

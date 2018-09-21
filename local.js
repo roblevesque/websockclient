@@ -8,7 +8,7 @@ var interfaceBuilder = (function() {
 return {
   parse:function( obj ) {  // Parse inbound JSON object
     if ( obj.m_type  != "IBUILD" )
-      return;  // Not for uss
+      return;  // Not for us
       switch ( obj.data.i_type ) {
         case "bar":
           this.build_bar( obj.data );
@@ -27,6 +27,9 @@ return {
           break;
         case "tab":
           this.build_tab( obj.data );
+          break;
+        case "piechart":
+          this.build_piechart( obj.data );
           break;
         default:
           console.log( "Debug: Undefined i_type: " + obj.data.i_type )
@@ -136,17 +139,121 @@ return {
 
   build_tab:function( obj ) { //Add tab to Tabgroup
     var name = obj.name;
-    var tabbie = `<li><a href="#${name}">${obj.name.replaceAll("_"," ")}</a></li>`;
-    var tabcontents = `<div id=${name}></div>`;
+    var tabbie = `<li><a id="btn_${name}" href="#${name}">${obj.name.replaceAll("_"," ")}</a></li>`;
+    var tabcontents = `<div id='${name}'></div>`;
     var current = document.getElementById( name );
     if (current == undefined ) {
       $(`#${obj.parent} ul`).append( tabbie );
       $(`#${obj.parent}`).append( tabcontents );
       $( `#${obj.parent}` ).tabs("refresh");
+      $( `#btn_${name}` ).click();
     }
+  }, // End add tab
+
+  build_piechart:function ( obj ) { // Add Pie Chart
+    var name = obj.name;
+    var current = document.getElementById( name );
+    if ( obj.parent != null | obj.parent != undefined )
+      var container = obj.parent;
+    else
+      var container = settings.interfaceContainer
+
+    if (current == undefined ) {
+        var graph = `<div id="${name}"></div>`
+        $(`#${container}`).append( graph );
+
+        var chartConfig = this.generatePieChartConfig( obj );
+
+       zingchart.render({
+        	id : `${name}`,
+        	data : chartConfig,
+        	height: 200,
+        	width: '100%'
+        });
+    } else {
+    var series = []
+    obj.values.forEach(function( element ) {
+      series.push({
+        values: [element.value],
+        text: element.name,
+        backgroundColor: element.color,
+      })
+    });
+    zingchart.exec(`${name}`, "setseriesdata", {
+      graphid: 0,
+      data: series
+    });
+  }
 
 
-  } // End add tab
+  },
+
+
+  generatePieChartConfig:function ( obj ) {  // Helper function to generate a pie chart chartConfig
+    var config = {
+      type: obj.type,
+      backgroundColor: "#333",
+      plot: {
+        borderColor: "#2B313B",
+        borderWidth: 2,
+        detach: false,
+        //slice: "5%",
+        valueBox: {
+          placement: 'in',
+          text: '%t\n%npv%',
+          fontFamily: "Open Sans",
+          fontSize: 10
+        },
+        tooltip:{
+          fontSize: '10',
+          fontFamily: "Open Sans",
+          padding: "1 2",
+          text: "%npv%"
+        },
+        animation:{
+          effect: 2,
+          method: 3,
+          sequence: 2,
+          speed:"ANIMATION_FAST"
+        }
+      },
+      title: {
+        fontColor: "#fff",
+        text: obj.name,
+        align: "left",
+        offsetX: 1,
+        fontFamily: "Open Sans",
+        fontSize: 10
+      },
+      subtitle: {
+        offsetX: 0,
+        offsetY: 0,
+        fontColor: "#8e99a9",
+        fontFamily: "Open Sans",
+        fontSize: "1",
+        text: '',
+        align: "left"
+      },
+      plotarea: {
+        margin: "2 0 0 0"
+      },
+
+      series : []
+
+  };
+
+    obj.values.forEach(function( element ) {
+      config.series.push({
+        values: [element.value],
+        text: element.name,
+        backgroundColor: element.color,
+      })
+    });
+    return config;
+
+
+
+}
 
 
 }  // </ interfaceBuilder > return
