@@ -25,7 +25,10 @@
   <div id="prompt" class="ansi-37 ansi-40"></div>
   <textarea id="input" autocomplete="off" autofocus></textarea>
 </div>
-<div id="containerInterface"></div>
+<div id="containerInterface">
+
+  <div id="radarScreen" style="height:250px; width:100%;"></div>
+</div>
 
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -33,6 +36,9 @@
 <script type="text/javascript" src="local.js"></script>
 <script type="text/javascript" src="settings.js"></script>
 <script src="https://cdn.zingchart.com/zingchart.min.js"></script> <!-- For Graphs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/95/three.min.js" crossorigin="anonymous"></script> <!-- For Radar Display -->
+<script src="OrbitControls.js"></script>
+<script src="Detector.js"></script>
 
 <script type="text/javascript">
   //var serverAddress = window.location.hostname;

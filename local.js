@@ -258,3 +258,68 @@ return {
 
 }  // </ interfaceBuilder > return
 }());
+
+
+// Radar Viewer Helper Functions
+var radarScreen = (function() {
+
+return {
+  initializeScreen: function( element ) {
+      if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+      var container = document.getElementById(element);
+      if ( container == undefined || container == null ) {
+        throw "invalid element";
+      }
+
+      var camera, controls, scene, renderer;
+      var clock = new THREE.Clock();
+      var WIDTH = container.clientWidth , HEIGHT = container.clientHeight;
+      scene = new THREE.Scene();
+      renderer = new THREE.WebGLRenderer();
+      container.appendChild( renderer.domElement );
+      renderer.setSize( WIDTH , HEIGHT );
+      camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 1, 1e7);
+      camera.position.set(0,0,100);
+      camera.lookAt(new THREE.Vector3(0,0,0));
+      camera.updateProjectionMatrix();
+	    renderer.render( scene, camera );
+      scene.updateMatrixWorld();
+      scene.add( camera );
+      g_objSelf = new THREE.SphereGeometry( 1, 5, 5 );
+      m_objSelf = new THREE.MeshBasicMaterial( { color: "#0F0", wireframe: false} );
+      mesh_objSelf = new THREE.Mesh( g_objSelf, m_objSelf );
+
+      scene.add( mesh_objSelf );
+      // 50 unit radius
+      var circle = this.drawCircle( 10 );
+      scene.add( new THREE.Line(circle[0], circle[1] ) );
+      // 25 Unit Radius
+      circle = this.drawCircle( 25 );
+      scene.add( new THREE.Line(circle[0], circle[1] ) );
+      // 50 unit radius
+      circle = this.drawCircle( 50 );
+      scene.add( new THREE.Line(circle[0], circle[1] ) );
+
+
+      renderer.render( scene, camera );
+
+  }, /* End initializeScreen */
+
+  drawCircle: function(radius) {
+    var segmentCount = 32,
+    geometry = new THREE.Geometry(),
+    material = new THREE.LineBasicMaterial({ color: 0x009900 });
+
+    for (var i = 0; i <= segmentCount; i++) {
+      var theta = (i / segmentCount) * Math.PI * 2;
+      geometry.vertices.push(
+          new THREE.Vector3(
+              Math.cos(theta) * radius,
+              Math.sin(theta) * radius,
+              0));
+    }
+
+    return [geometry,material];
+    } /* End drawCircle */
+  }
+}());
