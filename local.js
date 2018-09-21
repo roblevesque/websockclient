@@ -130,7 +130,7 @@ return {
 
   build_tabgroup:function( obj ) { // Build Tabgroup
     var name =  obj.name;
-    var current = document.getElementById(name);
+    var current = document.getElementById( name );
     if (current == undefined ) {
       var group = `<div id="${name}" class="tabgroup"><ul></ul></div>`
       $("#" + settings.interfaceContainer).append( group );
@@ -142,11 +142,11 @@ return {
     var name = obj.name;
     var tabbie = `<li><a href="#${name}">${obj.name.replaceAll("_"," ")}</a></li>`;
     var tabcontents = `<div id=${name}></div>`;
-    var current = document.getElementById(name);
+    var current = document.getElementById( name );
     if (current == undefined ) {
-      $(`#TGP-${obj.parent} ul`).append( tabbie );
-      $(`#TGP-${obj.parent}`).append( tabcontents );
-      $( `#TGP-${obj.parent}` ).tabs("refresh");
+      $(`#${obj.parent} ul`).append( tabbie );
+      $(`#${obj.parent}`).append( tabcontents );
+      $( `#${obj.parent}` ).tabs("refresh");
     }
 
 
