@@ -262,64 +262,223 @@ return {
 
 // Radar Viewer Helper Functions
 var radarScreen = (function() {
+   var scene = new THREE.Scene();
+   var renderer = new THREE.WebGLRenderer();
+   var camera;
+   var container;
+   var controls;
+   var WIDTH;
+   var HEIGHT;
+   var textLabels = [];
 
 return {
   initializeScreen: function( element ) {
       if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-      var container = document.getElementById(element);
+        container = document.getElementById(element);
       if ( container == undefined || container == null ) {
         throw "invalid element";
       }
 
-      var camera, controls, scene, renderer;
       var clock = new THREE.Clock();
-      var WIDTH = container.clientWidth , HEIGHT = container.clientHeight;
-      scene = new THREE.Scene();
-      renderer = new THREE.WebGLRenderer();
+      WIDTH = container.clientWidth;
+      HEIGHT = container.clientHeight;
+    //  this.scene = new THREE.Scene();
+    //  this.renderer = new THREE.WebGLRenderer();
       container.appendChild( renderer.domElement );
       renderer.setSize( WIDTH , HEIGHT );
-      camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 1, 1e7);
+      camera = new THREE.PerspectiveCamera(55, WIDTH / HEIGHT, 1, 1e7);
       camera.position.set(0,0,100);
       camera.lookAt(new THREE.Vector3(0,0,0));
       camera.updateProjectionMatrix();
 	    renderer.render( scene, camera );
       scene.updateMatrixWorld();
+      controls = new THREE.OrbitControls( camera, renderer.domElement );
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.50;
+      controls.enableZoom = true;
+      controls.minDistance = 15;
+      controls.maxDistance = 210;
+      controls.minAzimuthAngle = 0;
+      controls.maxAzimuthAngle = 0;
+      controls.minPolarAngle = this.radians( 90 );
+      controls.maxPolarAngle = this.radians( 170 );
+      controls.enablePan = false;
+
+      controls.addEventListener( 'change', this.render );
       scene.add( camera );
-      g_objSelf = new THREE.SphereGeometry( 1, 5, 5 );
-      m_objSelf = new THREE.MeshBasicMaterial( { color: "#0F0", wireframe: false} );
-      mesh_objSelf = new THREE.Mesh( g_objSelf, m_objSelf );
+      var g_objSelf = new THREE.SphereGeometry( 1, 5, 5 );
+      var m_objSelf = new THREE.MeshBasicMaterial( { color: "#0F0", wireframe: false} );
+      var mesh_objSelf = new THREE.Mesh( g_objSelf, m_objSelf );
 
       scene.add( mesh_objSelf );
-      // 50 unit radius
-      var circle = this.drawCircle( 10 );
-      scene.add( new THREE.Line(circle[0], circle[1] ) );
+
+      // 10 unit radius
+      this.drawCircle( 10 );
+
       // 25 Unit Radius
-      circle = this.drawCircle( 25 );
-      scene.add( new THREE.Line(circle[0], circle[1] ) );
+      this.drawCircle( 25 );
+
       // 50 unit radius
-      circle = this.drawCircle( 50 );
-      scene.add( new THREE.Line(circle[0], circle[1] ) );
+      this.drawCircle( 50 );
 
+      // 50 unit radius
+      this.drawCircle( 100 );
 
-      renderer.render( scene, camera );
+      // Draw Vertical Orientation Circle
+      this.drawCircle( 200, 90, "#262626" );
+
+      this.render();
 
   }, /* End initializeScreen */
 
-  drawCircle: function(radius) {
-    var segmentCount = 32,
-    geometry = new THREE.Geometry(),
-    material = new THREE.LineBasicMaterial({ color: 0x009900 });
+  drawCircle: function( radius, angle=0, lineColor="#00d100" ) {
+      var segmentCount = 32,
+      geometry = new THREE.Geometry(),
+      material = new THREE.LineBasicMaterial({ color: lineColor });
 
-    for (var i = 0; i <= segmentCount; i++) {
-      var theta = (i / segmentCount) * Math.PI * 2;
-      geometry.vertices.push(
-          new THREE.Vector3(
-              Math.cos(theta) * radius,
-              Math.sin(theta) * radius,
-              0));
-    }
+      for (var i = 0; i <= segmentCount; i++) {
+        var theta = (i / segmentCount) * Math.PI * 2;
+        geometry.vertices.push(
+            new THREE.Vector3(
+                Math.cos(theta) * radius,
+                Math.sin(theta) * radius,
+                0));
+      }
+      var circle = new THREE.Line( geometry, material );
+      circle.rotateY( this.radians( angle ) )
+      scene.add( circle );
+    }, /* End drawCircle */
+    drawPointHeading: function( azmuth, pitch, distance, name, labeldata ) {
 
-    return [geometry,material];
-    } /* End drawCircle */
-  }
+        this.drawPointCoord( this.calculateXYZ(azmuth, pitch, distance), name, labeldata );
+
+    }, /* End drawPointHeading */
+    drawPointCoord: function( coord = new THREE.Vector3(0,0,0), name = "Unnamed", labeldata="" ) {
+      var g_blip = new THREE.SphereGeometry( 1, 5, 5 );
+      var m_blip = new THREE.MeshBasicMaterial( { color: "#FF0", wireframe: false} );
+      var mesh_blip = new THREE.Mesh( g_blip, m_blip );
+      mesh_blip.name = name;
+      mesh_blip.position.set( coord.x, coord.y, coord.z );
+      mesh_blip.updateMatrix();
+      mesh_blip.matrixAutoUpdate = false;
+      scene.add( mesh_blip );
+
+      var label = this.drawPointLabel();
+      label.setHTML( name );
+      label.setHover( labeldata );
+      label.setParent( mesh_blip );
+      textLabels.push( label );
+      container.appendChild(label.element);
+      console.log(mesh_blip.position)
+      this.render();
+    },     /* End drawPointCoord */
+    removePointByName: function( point ){
+      var selectedObject;
+      while ( selectedObject = scene.getObjectByName( point ) ) {
+        scene.remove( selectedObject );
+      }
+      while ( selectedObject = scene.getObjectByName( point + "_label" ) ) {
+        scene.remove( selectedObject );
+      }
+      this.render();
+    }, /* End removePointByName */
+    drawPointLabel: function() {
+      var div = document.createElement('div');
+      var visibleText = document.createElement('span');
+      var hoverText = document.createElement('span');
+      hoverText.className = "radar-hover-text";
+      div.className = 'radar-text-label';
+      div.style.position = 'absolute';
+      div.style.width = 100;
+      div.style.height = 100;
+      div.innerHTML = "";
+      div.style.top = -1000;
+      div.style.left = -1000;
+
+      var _this = this;
+
+      div.appendChild( visibleText );
+      div.appendChild( hoverText )
+
+      return {
+        element: div,
+        hover: hoverText,
+        visible: visibleText,
+        parent: false,
+        position: new THREE.Vector3(0,0,0),
+        setHTML: function(html) {
+          this.visible.innerHTML = html;
+        },
+        setHover: function(html) {
+          this.hover.innerHTML = html;
+        },
+        setParent: function(threejsobj) {
+          this.parent = threejsobj;
+        },
+        updatePosition: function() {
+          if(parent) {
+            this.position.copy(this.parent.position);
+          }
+
+          var coords2d = this.get2DCoords(this.position, camera);
+          //var coords2d = _this.toScreenXY(this.position,camera,container)
+          this.element.style.left = coords2d.x + 'px';
+          this.element.style.top = coords2d.y + 'px';
+        },
+        get2DCoords: function(position, fcamera) {
+          //  var vector = position.project( fcamera );
+          //  vector.x = (vector.x + 1)/2 * container.clientWidth;
+          //  vector.y = -(vector.y - 1)/2 * container.clientHeight;
+          var vector = new THREE.Vector3();
+          vector = vector.setFromMatrixPosition( this.parent.matrixWorld );
+          vector.project( fcamera );
+          var widthHalf = WIDTH / 2;
+          var heightHalf = HEIGHT / 2;
+          var containerloc = container.getBoundingClientRect();
+          vector.x = ( (vector.x * widthHalf) + widthHalf ) + containerloc.left -15;
+          vector.y =  ( - (vector.y * heightHalf) + heightHalf ) + containerloc.top -10;
+          console.log(vector)
+          return vector;
+        }
+      };
+
+
+    }, /* End drawPointLabel */
+    toScreenXY:function(position, camera, canvas) {
+      var pos = position.clone();
+      var projScreenMat = new THREE.Matrix4();
+      projScreenMat.multiply(camera.projectionMatrix, camera.matrixWorldInverse);
+      projScreenMat.multiplyVector3( pos );
+
+      return { x: ( pos.x + 1 ) * canvas.width / 2 + canvas.offsetLeft,
+          y: ( - pos.y + 1) * canvas.height / 2 + canvas.offsetTop };
+    },
+    calculateXYZ: function( azmuth, pitch, distance ) {
+      var azmuth_rad = this.radians( azmuth + 90 );
+      var pitch_rad = this.radians( pitch );
+      var deltaPos = new THREE.Vector3;
+
+      deltaPos.x = distance * Math.cos ( azmuth_rad ) * Math.cos( pitch_rad );
+      deltaPos.y = distance * Math.cos( pitch_rad ) * Math.sin(azmuth_rad);
+  	  deltaPos.z = distance * Math.sin( pitch_rad );
+
+      return deltaPos;
+    }, /* End calculateXYZ */
+    render:function() {
+        renderer.render( scene, camera );
+        for(var i=0; i<textLabels.length; i++) {
+          textLabels[i].updatePosition();
+        }
+    }, /* End Render */
+    animate:function() {
+      requestAnimationFrame( this.animate.bind(this) );
+      this.render();
+      controls.update();
+
+    }, /* end Animate */
+    radians:function(degrees) { // Degress to radians
+        var pi = Math.PI;
+        return degrees * (pi/180);
+      } /* End Radians */
+} /* End radarScreen return */
 }());

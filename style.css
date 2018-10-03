@@ -173,3 +173,24 @@ fieldset { background-color: #353333;}
 .zc-ref {
   display: none !important;
 }
+
+div.radar-text-label {
+  color: #fff;
+  padding: 3px;
+  background-color: #000;
+  font-size: 0.65em;
+  border-radius: 5px;
+  border: 1px solid #FFF;
+  font-family: "Fira Mono", Monaco, "Andale Mono", "Lucida Console", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+  margin: -5px 0 0 15px;
+  pointer-events: auto;
+
+}
+
+span.radar-hover-text {
+  display: none;
+}
+
+div.radar-text-label:hover span.radar-hover-text {
+  display: block;
+}
