@@ -295,7 +295,7 @@ return {
       controls = new THREE.OrbitControls( camera, renderer.domElement );
       controls.enableDamping = true;
       controls.dampingFactor = 0.50;
-      controls.enableZoom = true;
+      controls.enableZoom = false;
       controls.minDistance = 15;
       controls.maxDistance = 210;
       controls.minAzimuthAngle = 0;
@@ -324,14 +324,22 @@ return {
       // 50 unit radius
       this.drawCircle( 100 );
 
-      // Draw Vertical Orientation Circle
-      this.drawCircle( 200, 90, "#262626" );
+      // Vertical Orientation Circle
+      this.drawCircle( 200, {x:0, y:90}, "#262626" );
+
+      // Horizontal Orientation Circle
+      this.drawCircle( 200, {x:90, y:0}, "#262626" );
+
+      // Zoom in and out buttons
+      var zoom = this.drawZoomButtons();
+      zoom.drawButtons();
+
 
       this.render();
 
   }, /* End initializeScreen */
 
-  drawCircle: function( radius, angle=0, lineColor="#00d100" ) {
+  drawCircle: function( radius, angle={x:0,y:0}, lineColor="#00d100" ) {
       var segmentCount = 32,
       geometry = new THREE.Geometry(),
       material = new THREE.LineBasicMaterial({ color: lineColor });
@@ -345,9 +353,79 @@ return {
                 0));
       }
       var circle = new THREE.Line( geometry, material );
-      circle.rotateY( this.radians( angle ) )
+      circle.rotateY( this.radians( angle.y ) )
+      circle.rotateX( this.radians( angle.x ) )
       scene.add( circle );
     }, /* End drawCircle */
+    drawZoomButtons: function() {
+      var zoomIn = document.createElement('div');
+      var zoomOut = document.createElement('div');
+      zoomIn.className = 'radar-zoom-button';
+      zoomIn.style.position = 'absolute';
+      zoomIn.style.width = 50;
+      zoomIn.style.height = 50;
+      zoomIn.id="radar-zoom-in"
+      zoomIn.innerHTML = "<i class='fas fa-search-plus'></i>";
+      zoomIn.style.top = -1000;
+      zoomIn.style.left = -1000;
+      zoomOut = zoomIn.cloneNode(true);
+      zoomOut.id="radar-zoom-out";
+      zoomOut.innerHTML = "<i class='fas fa-search-minus'></i>";
+
+      var _this = this;
+
+
+      return {
+        zoomIn: zoomIn,
+        zoomOut: zoomOut,
+        positionIn: new THREE.Vector3(0,0,0),
+        positionOut: new THREE.Vector3(0,0,0),
+        updatePosition: function() {
+          //var coords2d = _this.toScreenXY(this.position,camera,container)
+          var containerloc = this.getContainerLocation();
+          var inHeightPad = parseFloat(window.getComputedStyle(document.getElementById("radar-zoom-in")).height) + 15 ;
+          var inWidthPad = parseFloat(window.getComputedStyle(document.getElementById("radar-zoom-in")).width) + 15;
+          this.zoomIn.style.left = ( containerloc.right - inWidthPad ) + 'px';
+          this.zoomIn.style.top = ( containerloc.bottom - inHeightPad ) + 'px';
+
+          var outHeightPad = parseFloat(window.getComputedStyle(document.getElementById("radar-zoom-out")).height) + 15 ;
+          var outWidthPad = parseFloat(window.getComputedStyle(document.getElementById("radar-zoom-out")).width) - 5;
+          this.zoomOut.style.left = ( containerloc.left + outWidthPad ) + 'px';
+          this.zoomOut.style.top = ( containerloc.bottom - outHeightPad ) + 'px';
+
+        },
+        getContainerLocation: function() {
+          return container.getBoundingClientRect();
+        },
+        drawButtons: function() {
+          container.appendChild( zoomIn );
+          container.appendChild( zoomOut );
+          this.updatePosition();
+
+          // Do some jQuery magic where
+          $("#radar-zoom-in").on("click", function() {
+
+            camera.fov = Math.max(camera.fov * 0.85, 15);
+            camera.updateProjectionMatrix();
+            _this.render();
+
+
+
+          });
+          $("#radar-zoom-out").on("click", function() {
+
+            camera.fov = Math.min(camera.fov * 1.15, 92);
+            camera.updateProjectionMatrix();
+            _this.render();
+
+
+
+          });
+        }
+      };
+
+
+    }, /* End drawZoomButtons */
     drawPointHeading: function( azmuth, pitch, distance, name, labeldata ) {
 
         this.drawPointCoord( this.calculateXYZ(azmuth, pitch, distance), name, labeldata );
@@ -369,7 +447,6 @@ return {
       label.setParent( mesh_blip );
       textLabels.push( label );
       container.appendChild(label.element);
-      console.log(mesh_blip.position)
       this.render();
     },     /* End drawPointCoord */
     removePointByName: function( point ){
@@ -424,7 +501,23 @@ return {
           //var coords2d = _this.toScreenXY(this.position,camera,container)
           this.element.style.left = coords2d.x + 'px';
           this.element.style.top = coords2d.y + 'px';
+
+          this.updateVisibility(); // Don't display outside of the radar box
         },
+        updateVisibility: function() {
+          var containerloc = container.getBoundingClientRect();
+          var top = parseFloat(this.element.style.top);
+          var bottom = parseFloat(this.element.style.bottom);
+          var left = parseFloat(this.element.style.left);
+          var right = parseFloat(this.element.style.right);
+
+            if( top < containerloc.top || bottom > containerloc.bottom || left < containerloc.left || right > containerloc.right) {
+              this.element.style.display = "none"
+            } else {
+              this.element.style.display = "block"
+            }
+
+        }, /* End updateVisibility */
         get2DCoords: function(position, fcamera) {
           //  var vector = position.project( fcamera );
           //  vector.x = (vector.x + 1)/2 * container.clientWidth;
@@ -437,7 +530,6 @@ return {
           var containerloc = container.getBoundingClientRect();
           vector.x = ( (vector.x * widthHalf) + widthHalf ) + containerloc.left -15;
           vector.y =  ( - (vector.y * heightHalf) + heightHalf ) + containerloc.top -10;
-          console.log(vector)
           return vector;
         }
       };

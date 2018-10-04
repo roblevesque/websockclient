@@ -10,6 +10,7 @@ html, body {
   font-family: 'Courier New', monospace;
   font-size: 10pt;
   font-weight: normal;
+  z-index: 3
 }
 
 a {
@@ -184,6 +185,7 @@ div.radar-text-label {
   font-family: "Fira Mono", Monaco, "Andale Mono", "Lucida Console", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
   margin: -5px 0 0 15px;
   pointer-events: auto;
+  z-index: 0;
 
 }
 
@@ -193,4 +195,12 @@ span.radar-hover-text {
 
 div.radar-text-label:hover span.radar-hover-text {
   display: block;
+}
+
+div.radar-zoom-button {
+  background-color: #009900;
+  border: 1px solid #333;
+  border-radius: 5px;
+  font-size: 1em;
+  padding: 2px;
 }
