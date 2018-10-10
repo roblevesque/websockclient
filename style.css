@@ -175,11 +175,15 @@ fieldset { background-color: #353333;}
   display: none !important;
 }
 
+
+div.radar-screen {
+  overflow: hidden;
+}
 div.radar-text-label {
   color: #fff;
   padding: 3px;
   background-color: #000;
-  font-size: 0.65em;
+  font-size: 0.85em;
   border-radius: 5px;
   border: 1px solid #FFF;
   font-family: "Fira Mono", Monaco, "Andale Mono", "Lucida Console", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
@@ -197,10 +201,19 @@ div.radar-text-label:hover span.radar-hover-text {
   display: block;
 }
 
+#radar-zoom-in:hover {  cursor: zoom-in;  }
+#radar-zoom-out:hover { cursor: zoom-out; }
+
 div.radar-zoom-button {
   background-color: #009900;
+  color: #000;
   border: 1px solid #333;
   border-radius: 5px;
   font-size: 1em;
   padding: 2px;
+}
+
+div.radar-zoom-button:hover {
+  background-color: #000;
+  color: #009900;
 }

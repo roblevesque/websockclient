@@ -13,14 +13,14 @@ var WSClient = (function (window, document, undefined) {
   // MU* protocol carried over the WebSocket API.
   function Connection(url) {
     var that = this;
-    
+
     this.url = url;
     this.socket = null;
     this.isOpen = false;
-    
+
     Connection.reconnect(that);
   }
-  
+
   Connection.CHANNEL_TEXT = 't';
   Connection.CHANNEL_JSON = 'j';
   Connection.CHANNEL_HTML = 'h';
@@ -30,7 +30,7 @@ var WSClient = (function (window, document, undefined) {
   Connection.reconnect = function (that) {
     that.reconnect();
   };
-  
+
   Connection.onopen = function (that, evt) {
     that.isOpen = true;
     that.onOpen && that.onOpen(evt);
@@ -52,7 +52,7 @@ var WSClient = (function (window, document, undefined) {
 
   Connection.prototype.reconnect = function () {
     var that = this;
-    
+
     // quit the old connection, if we have one
     if (this.isConnected()) {
       var old = this.socket;
@@ -79,7 +79,7 @@ var WSClient = (function (window, document, undefined) {
       Connection.onmessage(that, evt);
     };
   };
-  
+
   Connection.prototype.isConnected = function() {
     return (this.socket && this.isOpen && (this.socket.readyState === 1));
   };
@@ -117,7 +117,7 @@ var WSClient = (function (window, document, undefined) {
     case Connection.CHANNEL_PUEBLO:
       this.onPueblo && this.onPueblo(data);
       break;
-    
+
     case Connection.CHANNEL_PROMPT:
       this.onPrompt && this.onPrompt(data);
       break;
@@ -144,11 +144,11 @@ var WSClient = (function (window, document, undefined) {
   // MU* terminal emulator.
   function Terminal(root) {
     this.root = root;
-    
+
     if (root === null) {
       return null;
     }
-    
+
     this.clear();
   }
 
@@ -167,14 +167,14 @@ var WSClient = (function (window, document, undefined) {
 
   Terminal.DEFAULT_FG = 37;
   Terminal.DEFAULT_BG = 30;
-  
+
   Terminal.UNCLOSED_TAGS = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img',
           'input', 'keygen', 'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr'];
 
 
   /////////////////////////////////////////////////////
   // ansi parsing routines
-  
+
   Terminal.encodeState = function (state) {
     if (!state) {
       return '';
@@ -186,15 +186,15 @@ var WSClient = (function (window, document, undefined) {
       var value = state.fg;
       state.fg = state.bg;
       state.bg = value;
-      
+
       value = state.fg256;
       state.fg256 = state.bg256;
       state.bg256 = value;
     }
-    
+
     var fg = state.fg;
     var bg = state.bg;
-    
+
     if (state[Terminal.ANSI_UNDERLINE]) {
       classes[classes.length] = 'ansi-' + Terminal.ANSI_UNDERLINE;
     }
@@ -202,7 +202,7 @@ var WSClient = (function (window, document, undefined) {
     // make sure to avoid conflict with XTERM256 color's usage of blink (code 5)
     if (state.fg256) {
       classes[classes.length] = 'ansi-38-5-' + state.fg;
-    } else {  
+    } else {
       if (state[Terminal.ANSI_BRIGHT]) {
         if (state[Terminal.ANSI_INVERSE]) {
           if (fg !== Terminal.DEFAULT_FG) {
@@ -215,7 +215,7 @@ var WSClient = (function (window, document, undefined) {
         classes[classes.length] = 'ansi-' + fg;
       }
     }
-    
+
     if (state.bg256) {
       classes[classes.length] = 'ansi-48-5-' + state.bg;
     } else {
@@ -235,7 +235,7 @@ var WSClient = (function (window, document, undefined) {
     if (state[Terminal.ANSI_BLINK] && !(state.fg256 || state.bg256)) {
       classes[classes.length] = 'ansi-' + Terminal.ANSI_BLINK;
     }
-    
+
     return classes.join(' ');
   };
 
@@ -265,9 +265,9 @@ var WSClient = (function (window, document, undefined) {
         } else {
           value = parseInt(value);
         }
-        
+
         state = this.getANSI();
-        
+
         // check for xterm256 fg/bg first, fallback to standard codes otherwise
         if (state[Terminal.ANSI_XTERM_FG] && state[Terminal.ANSI_BLINK]) {
           if (value >= 0 && value <= 255) {
@@ -377,7 +377,7 @@ var WSClient = (function (window, document, undefined) {
 
   /////////////////////////////////////////////////////
   // message appending routines
-  
+
   // appends a text string to the terminal, parsing ansi escape codes into html/css
   Terminal.prototype.appendText = function (data) {
     var start = 0;
@@ -479,22 +479,22 @@ var WSClient = (function (window, document, undefined) {
   Terminal.prototype.appendChild = function (fragment) {
     var last = (this.span || this.stack[this.stack.length - 1]);
     last.appendChild(fragment);
-    
+
     this.scrollDown();
   };
-  
+
   // append a log message to the terminal
   Terminal.prototype.appendMessage = function (classid, message) {
     var div = document.createElement('div');
     div.className = classid;
-    
+
     // create a text node to safely append the string without rendering code
     var text = document.createTextNode(message);
     div.appendChild(text);
-    
+
     this.appendChild(div);
   };
-  
+
   // push a new html element onto the stack
   Terminal.prototype.pushElement = function (element) {
     this.span = null;
@@ -502,7 +502,7 @@ var WSClient = (function (window, document, undefined) {
     this.stack[this.stack.length] = element;
   };
 
-  // remove 1 level from the stack, check consistency 
+  // remove 1 level from the stack, check consistency
   Terminal.prototype.popElement = function () {
     this.span = null;
 
@@ -525,7 +525,7 @@ var WSClient = (function (window, document, undefined) {
       tag = data;
       attrs = '';
     }
-    
+
     var html = '<' + tag + (attrs ? ' ' : '') + attrs + '>';
 
     var start;
@@ -535,18 +535,18 @@ var WSClient = (function (window, document, undefined) {
       start = false;
       tag = tag.substring(1);
     }
-    
+
     // detect a self closed tag
     var selfClosing = false;
     if ((tag.substring(-1) === '/') || (attrs.substring(-1) === '/')) {
       selfClosing = true;
     }
-    
+
     if (Terminal.UNCLOSED_TAGS.indexOf(tag.toLowerCase()) > -1) {
       selfClosing = true;
     }
 
-    if ((tag === 'XCH_PAGE') || 
+    if ((tag === 'XCH_PAGE') ||
         ((tag === 'IMG') && (attrs.search(/xch_graph=(("[^"]*")|('[^']*')|([^\s]*))/i) !== -1))) {
       //console.log("unhandled pueblo", html);
       return;
@@ -575,11 +575,11 @@ var WSClient = (function (window, document, undefined) {
         /xch_cmd="([^"]*)"/i,
         "onClick='this.onCommand(&quot;$1&quot;)'"
       );
-      
+
       div.firstChild.onCommand = this.onCommand;
 
       div.setAttribute('target', '_blank');
-      
+
       // add this tag to the stack to keep track of nested elements
       this.pushElement(div.firstChild);
 
@@ -596,7 +596,7 @@ var WSClient = (function (window, document, undefined) {
       }
     }
   };
-  
+
   Terminal.prototype.clear = function() {
     this.root.innerHTML = '';
 
@@ -612,13 +612,13 @@ var WSClient = (function (window, document, undefined) {
     this.ansiState = null;
     this.ansiDirty = false;
   };
-  
+
   // animate scrolling the terminal window to the bottom
   Terminal.prototype.scrollDown = function() {
     // TODO: May want to animate this, to make it less abrupt.
     //this.root.scrollTop = this.root.scrollHeight;
     //return;
-    
+
     var root = this.root;
     var scrollCount = 0;
     var scrollDuration = 500.0;
@@ -651,29 +651,29 @@ var WSClient = (function (window, document, undefined) {
   // User input handler (command history, callback events)
   function UserInput(root) {
     var that = this;
-    
+
     if (root === null) {
       return null;
     }
-    
+
     this.root = root;
-    
+
     this.clearHistory();
-  
+
     this.root.onkeydown = function(evt) {
       UserInput.onkeydown(that, evt);
     };
-    
+
     this.root.onkeyup = function(evt) {
       UserInput.onkeyup(that, evt);
     };
   }
-  
+
   // clear the history for a given UserInput object
   UserInput.clearhistory = function(that) {
 
   };
-  
+
   // passthrough to the local onKeyDown callback
   UserInput.onkeydown = function(that, evt) {
     that.onKeyDown && that.onKeyDown(evt);
@@ -683,20 +683,20 @@ var WSClient = (function (window, document, undefined) {
   UserInput.onkeyup = function(that, evt) {
     that.onKeyUp && that.onKeyUp(evt);
   };
-  
+
   // set the default onKeyDown handler
   UserInput.prototype.onKeyDown = function(e) {
     PressKey(this, e);
   };
-  
+
   // set the default onKeyUp handler
   UserInput.prototype.onKeyUp = function(e) {
     ReleaseKey(this, e);
   };
-  
+
   UserInput.prototype.onEnter = null;
   UserInput.prototype.onEscape = null;
-  
+
   // clear the command history
   UserInput.prototype.clearHistory = function() {
     this.history = [];
@@ -704,7 +704,7 @@ var WSClient = (function (window, document, undefined) {
     this.save_current = '';
     this.current = -1;
   };
-  
+
   // push a command onto the history list and clear the input box
   UserInput.prototype.saveCommand = function() {
     if (this.root.value !== '') {
@@ -715,21 +715,21 @@ var WSClient = (function (window, document, undefined) {
       this.root.value = '';
     }
   };
-  
+
   // cycle the history backward
   UserInput.prototype.cycleBackward = function() {
     // save the current entry in case we come back
     if (this.current < 0) {
       this.save_current = this.root.value;
     }
-    
+
     // cycle command history backward
     if (this.current < this.ncommand - 1) {
       this.current++;
       this.root.value = this.history[this.ncommand - this.current - 1];
     }
   };
-  
+
   // cycle the history forward
   UserInput.prototype.cycleForward = function () {
     // cycle command history forward
@@ -742,9 +742,9 @@ var WSClient = (function (window, document, undefined) {
       this.root.value = this.save_current;
     }
   };
-  
-  
-  
+
+
+
   // move the input cursor to the end of the input elements current text
   UserInput.prototype.moveCursor = function() {
     if (typeof this.root.selectionStart === "number") {
@@ -756,19 +756,19 @@ var WSClient = (function (window, document, undefined) {
         range.select();
     }
   };
-  
-  
-  
+
+
+
   // clear the current input text
   UserInput.prototype.clear = function() {
     this.root.value = '';
   };
-  
+
   // get the current text in the input box
   UserInput.prototype.value = function() {
     return this.root.value;
   };
-  
+
   // refocus the input box
   UserInput.prototype.focus = function() {
     var text = "";
@@ -777,16 +777,16 @@ var WSClient = (function (window, document, undefined) {
     } else if (document.selection && document.selection.type != "Control") {
       text = document.selection.createRange().text;
     }
-    
+
     if (text === "") {
       this.root.focus();
     }
   };
-  
+
   // user-defined keys for command history
   UserInput.prototype.keyCycleForward = null;
   UserInput.prototype.keyCycleBackward = null;
-  
+
   UserInput.isKeyCycleForward = function(that, key) {
     if (that && that.keyCycleForward) {
       return that.keyCycleForward(key);
@@ -795,7 +795,7 @@ var WSClient = (function (window, document, undefined) {
       return (key.code === 78 && key.ctrl);
     }
   };
-  
+
   UserInput.isKeyCycleBackward = function (that, key) {
     if (that && that.keyCycleBackward) {
       return that.keyCycleBackward(key);
@@ -804,9 +804,9 @@ var WSClient = (function (window, document, undefined) {
       return (key.code === 80 && key.ctrl);
     }
   };
-  
-  
-  
+
+
+
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -931,11 +931,11 @@ var WSClient = (function (window, document, undefined) {
   function ReplaceToken(command) {
     var cmd = command;
     var regex = /\?\?/;
-    
+
     // check for the search token '??'
     if (cmd.search(regex) !== -1) {
       var val = prompt(command);
-      
+
       if (val === null) {
         // user cancelled the prompt, don't send any command
         cmd = '';
@@ -944,7 +944,7 @@ var WSClient = (function (window, document, undefined) {
         cmd = cmd.replace(regex, val);
       }
     }
-    
+
     return cmd;
   };
 
@@ -963,7 +963,7 @@ var WSClient = (function (window, document, undefined) {
                 alt: e.altKey };
 
     var prevent = true;
-    
+
     if (UserInput.isKeyCycleBackward(that, key)) {
 
       // cycle history backward
@@ -976,25 +976,25 @@ var WSClient = (function (window, document, undefined) {
 
     } else if (key.code === 13) {
       // enter key
-      
+
       // save the command string and clear the input box
       var cmd = that.root.value;
       that.saveCommand();
 
       // pass through to the local callback for sending data
       that.onEnter && that.onEnter(cmd);
-        
+
     } else if (key.code === 27) {
 
       // pass through to the local callback for the escape key
       that.onEscape && that.onEscape();
 
-    } else { 
+    } else {
       // didn't capture anything, pass it through
       prevent = false;
 
     }
-    
+
     if (prevent) {
       e.preventDefault();
     }
@@ -1039,22 +1039,21 @@ var WSClient = (function (window, document, undefined) {
   exports.output = function (root) {
     return new Terminal(root);
   };
-  
+
   // create an input handler that saves and recalls command history
   exports.input = function (root) {
     return new UserInput(root);
   };
-  
+
   // default key event callback handlers
   exports.pressKey = PressKey;
   exports.releaseKey = ReleaseKey;
-  
+
   // helper for replacing ?? in string with user input
   exports.parseCommand = ReplaceToken;
-  
+
   // export the LinkHandler just in case it's useful elsewhere
   exports.parseLinks = LinkHandler;
-  
+
   return exports;
 })(window, document);
-

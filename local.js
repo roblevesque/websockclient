@@ -4,6 +4,7 @@ String.prototype.replaceAll = function(target, replacement) {
 
 
 var interfaceBuilder = (function() {
+var objectWatch = [];
 
 return {
   parse:function( obj ) {  // Parse inbound JSON object
@@ -30,6 +31,9 @@ return {
           break;
         case "piechart":
           this.build_piechart( obj.data );
+          break;
+        case "radarscreen":
+          this.build_radarscreen( obj.data );
           break;
         default:
           console.log( "Debug: Undefined i_type: " + obj.data.i_type )
@@ -186,8 +190,45 @@ return {
   }
 
 
-  },
+  }, // End build_piechart
+  build_radarscreen: function( obj ) {
+    if (typeof objectWatch[obj.name] != "undefined") {  // Grab existing screen by name, if exists
+      var rscope = objectWatch[obj.name];
+    } else {  // Otherwise, build new
+      var name = obj.name;
+      var scopecontainer = `<div id='${name}' class='radar-screen' style='height:200px; width:100%;'></div>`;
+      if(obj.parent != null || obj.parent === "") {
+        var container = document.getElementById(obj.parent);
+        container = container.id;
+      } else { var container = settings.interfaceContainer;  }
+      var rscope = radarScreen;
 
+      $(`#${container}`).append( scopecontainer );
+      objectWatch[obj.name] = rscope;
+      rscope.initializeScreen( obj.name );
+    }
+    var existingPoints = radarScreen.getPoints();
+
+  /*  existingPoints.forEach(function(point) {
+      if( typeof obj.points[point.parent.name] == "undefined" )  {
+          radarScreen.removePointByName( point.parent.name );
+      }
+      });*/
+      radarScreen.removeAllPoints();  // Remove them all for now and redraw. TODO: Work on smart updating
+
+    obj.points.forEach(function(point){
+      // drawPointHeading: function( azmuth, pitch, distance, name, labeldata )
+      radarScreen.drawPointHeading(point.heading.xy, point.heading.y, point.heading.distance, point.name, point.data  );
+
+    });
+
+
+
+
+
+
+
+  }, // End build_radarscreen
 
   generatePieChartConfig:function ( obj ) {  // Helper function to generate a pie chart chartConfig
     var config = {
@@ -270,8 +311,12 @@ var radarScreen = (function() {
    var WIDTH;
    var HEIGHT;
    var textLabels = [];
+   var interfaceElements = [];
 
 return {
+  getPoints: function() {
+    return textLabels;
+  },
   initializeScreen: function( element ) {
       if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
         container = document.getElementById(element);
@@ -291,6 +336,7 @@ return {
       camera.lookAt(new THREE.Vector3(0,0,0));
       camera.updateProjectionMatrix();
 	    renderer.render( scene, camera );
+      scene.background = new THREE.Color( 0x002100   );
       scene.updateMatrixWorld();
       controls = new THREE.OrbitControls( camera, renderer.domElement );
       controls.enableDamping = true;
@@ -332,8 +378,25 @@ return {
 
       // Zoom in and out buttons
       var zoom = this.drawZoomButtons();
-      zoom.drawButtons();
+      interfaceElements.push( zoom.drawButtons() );
 
+      var  _this = this;
+      window.onresize = function() {
+            WIDTH = container.clientWidth;
+            HEIGHT = container.clientHeight;
+            camera.aspect = WIDTH / HEIGHT;
+            camera.updateProjectionMatrix();
+            renderer.setSize(WIDTH, HEIGHT);
+
+            textLabels.forEach(function(label) {
+              label.updatePosition();
+            });
+            interfaceElements.forEach(function(element) {
+              element.updatePosition();
+            });
+
+          _this.render();
+      }
 
       this.render();
 
@@ -342,7 +405,7 @@ return {
   drawCircle: function( radius, angle={x:0,y:0}, lineColor="#00d100" ) {
       var segmentCount = 32,
       geometry = new THREE.Geometry(),
-      material = new THREE.LineBasicMaterial({ color: lineColor });
+      material = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 2  });
 
       for (var i = 0; i <= segmentCount; i++) {
         var theta = (i / segmentCount) * Math.PI * 2;
@@ -361,7 +424,7 @@ return {
       var zoomIn = document.createElement('div');
       var zoomOut = document.createElement('div');
       zoomIn.className = 'radar-zoom-button';
-      zoomIn.style.position = 'absolute';
+      zoomIn.style.position = 'fixed';
       zoomIn.style.width = 50;
       zoomIn.style.height = 50;
       zoomIn.id="radar-zoom-in"
@@ -402,6 +465,8 @@ return {
           container.appendChild( zoomOut );
           this.updatePosition();
 
+
+
           // Do some jQuery magic where
           $("#radar-zoom-in").on("click", function() {
 
@@ -421,6 +486,9 @@ return {
 
 
           });
+
+
+          return this;
         }
       };
 
@@ -440,32 +508,49 @@ return {
       mesh_blip.updateMatrix();
       mesh_blip.matrixAutoUpdate = false;
       scene.add( mesh_blip );
-
       var label = this.drawPointLabel();
       label.setHTML( name );
-      label.setHover( labeldata );
+      var labeldata_parsed = "";
+
+      if( typeof labedata == "array" || typeof labeldata == "object" ){
+        for ( d in labeldata ){
+          var k = Object.keys( labeldata[d] )
+          labeldata_parsed += `<b>${k}</b>: ${labeldata[d][k]}<br/>`;
+        }
+      }
+
+      //var labelData_formatted = `<span class="radar-label-data-wrapper">${labeldata_parsed}</span>`
+      label.setHover( labeldata_parsed );
       label.setParent( mesh_blip );
       textLabels.push( label );
       container.appendChild(label.element);
       this.render();
     },     /* End drawPointCoord */
     removePointByName: function( point ){
-      var selectedObject;
-      while ( selectedObject = scene.getObjectByName( point ) ) {
-        scene.remove( selectedObject );
-      }
-      while ( selectedObject = scene.getObjectByName( point + "_label" ) ) {
-        scene.remove( selectedObject );
-      }
+      textLabels.forEach(function(label,index,object)  {
+        if ( label.parent.name === point ) {
+          scene.remove( label.parent );
+          label.element.parentNode.removeChild( label.element );
+          object.splice(index,1);
+        }
+      });
       this.render();
     }, /* End removePointByName */
+    removeAllPoints: function() {
+      textLabels.forEach(function(label, index, object)  {
+        scene.remove( label.parent );
+        label.element.parentNode.removeChild( label.element );
+      });
+      textLabels = [];
+      this.render();
+    }, /* End removeAllPoints */
     drawPointLabel: function() {
       var div = document.createElement('div');
       var visibleText = document.createElement('span');
       var hoverText = document.createElement('span');
       hoverText.className = "radar-hover-text";
       div.className = 'radar-text-label';
-      div.style.position = 'absolute';
+      div.style.position = 'fixed';
       div.style.width = 100;
       div.style.height = 100;
       div.innerHTML = "";
@@ -499,6 +584,7 @@ return {
 
           var coords2d = this.get2DCoords(this.position, camera);
           //var coords2d = _this.toScreenXY(this.position,camera,container)
+          //var coords2d = this.getScreenPosition(this.parent, camera);
           this.element.style.left = coords2d.x + 'px';
           this.element.style.top = coords2d.y + 'px';
 
@@ -506,15 +592,16 @@ return {
         },
         updateVisibility: function() {
           var containerloc = container.getBoundingClientRect();
-          var top = parseFloat(this.element.style.top);
-          var bottom = parseFloat(this.element.style.bottom);
-          var left = parseFloat(this.element.style.left);
-          var right = parseFloat(this.element.style.right);
+          var radarLoc = this.element.getBoundingClientRect();
+          var top = radarLoc.top;
+          var bottom = radarLoc.bottom;
+          var left = radarLoc.left;
+          var right = radarLoc.right;
 
             if( top < containerloc.top || bottom > containerloc.bottom || left < containerloc.left || right > containerloc.right) {
-              this.element.style.display = "none"
+              this.element.style.zIndex = "-100"
             } else {
-              this.element.style.display = "block"
+              this.element.style.zIndex = "1"
             }
 
         }, /* End updateVisibility */
@@ -528,9 +615,28 @@ return {
           var widthHalf = WIDTH / 2;
           var heightHalf = HEIGHT / 2;
           var containerloc = container.getBoundingClientRect();
-          vector.x = ( (vector.x * widthHalf) + widthHalf ) + containerloc.left -15;
-          vector.y =  ( - (vector.y * heightHalf) + heightHalf ) + containerloc.top -10;
+          vector.x = ( (vector.x * widthHalf) + widthHalf )  + containerloc.left - 10 ;
+          vector.y =  ( - (vector.y * heightHalf) + heightHalf ) + containerloc.top -15;
           return vector;
+        }, /* End get2DCoord */
+        getScreenPosition: function(obj, camera)    {
+          var vector = new THREE.Vector3();
+
+          var widthHalf = 0.5*renderer.context.canvas.width;
+          var heightHalf = 0.5*renderer.context.canvas.height;
+
+          obj.updateMatrixWorld();
+          vector.setFromMatrixPosition(obj.matrixWorld);
+          vector.project(camera);
+
+          vector.x = ( vector.x * widthHalf ) + widthHalf;
+          vector.y = - ( vector.y * heightHalf ) + heightHalf;
+
+          return {
+              x: vector.x,
+              y: vector.y
+          };
+
         }
       };
 
@@ -546,13 +652,13 @@ return {
           y: ( - pos.y + 1) * canvas.height / 2 + canvas.offsetTop };
     },
     calculateXYZ: function( azmuth, pitch, distance ) {
-      var azmuth_rad = this.radians( azmuth + 90 );
+      var azmuth_rad = this.radians( azmuth );
       var pitch_rad = this.radians( pitch );
       var deltaPos = new THREE.Vector3;
 
-      deltaPos.x = distance * Math.cos ( azmuth_rad ) * Math.cos( pitch_rad );
-      deltaPos.y = distance * Math.cos( pitch_rad ) * Math.sin(azmuth_rad);
-  	  deltaPos.z = distance * Math.sin( pitch_rad );
+      deltaPos.y = Math.cos ( azmuth_rad ) * Math.cos( pitch_rad )  * distance;
+      deltaPos.x = Math.sin( azmuth_rad ) * Math.cos( pitch_rad )  * distance;
+  	  deltaPos.z = Math.sin( pitch_rad ) * distance;
 
       return deltaPos;
     }, /* End calculateXYZ */
@@ -569,8 +675,7 @@ return {
 
     }, /* end Animate */
     radians:function(degrees) { // Degress to radians
-        var pi = Math.PI;
-        return degrees * (pi/180);
+         return degrees * (Math.PI / 180);
       } /* End Radians */
 } /* End radarScreen return */
 }());
