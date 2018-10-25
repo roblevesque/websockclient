@@ -112,7 +112,7 @@ textarea {
 }
 
 .ui-progressbar {
-  width: 98%;
+  width: 100%;
   position:relative;
   height: 1.5em;
 }
@@ -136,18 +136,17 @@ textarea {
 .ui-widget.ui-widget-content {
   border: 1px solid #000000;
   background-color: #3a3a3a;
-
-
 }
+
 
 fieldset legend {
   font-weight: bold;
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
+  text-align: center;
+  padding-top: 1.5vh;
 
 }
-
-fieldset { background-color: #353333;}
 
 #tabgroup {
     padding: 0px;
@@ -175,9 +174,38 @@ fieldset { background-color: #353333;}
   display: none !important;
 }
 
+.ui-fs {
+  /*padding: 1vh 0.5vw 1vh 0.5vw; */
+  border: 0;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(15,26,173,1) 20%, rgba(0,0,0,1) 20%, rgba(0,0,0,1) 80%, rgba(15,26,173,1) 80%);
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding;
+  background-clip: padding-box;
+}
+
+.ui-fs-contents {
+  padding: 1.5vh 0.5vw 2.0vh 0.5vw;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  background-color: #000;
+}
+.ui-fs-contents div {
+
+}
+
+.ui-piechart {
+  background: inherit;
+}
 
 div.radar-screen {
   overflow: hidden;
+  background-image: url('assets/starfieldbg.jpg');
+  background-size: cover;
 }
 div.radar-text-label {
   color: #fff;

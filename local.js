@@ -51,7 +51,7 @@ return {
     else
       var container = settings.interfaceContainer
     if (current == undefined ) {
-      var group = `<fieldset><legend>${obj.name.replaceAll("_"," ")}</legend><div id="${name}"></div></fieldset>`;
+      var group = `<fieldset class="ui-fs"><legend>${obj.name.replaceAll("_"," ")}</legend><div class="ui-fs-contents" id="${name}"></div></fieldset>`;
       $("#" + container).append( group );
     }
   }, // End build_group
@@ -163,7 +163,7 @@ return {
       var container = settings.interfaceContainer
 
     if (current == undefined ) {
-        var graph = `<div id="${name}"></div>`
+        var graph = `<div class="ui-piechart" id="${name}"></div>`
         $(`#${container}`).append( graph );
 
         var chartConfig = this.generatePieChartConfig( obj );
@@ -172,7 +172,7 @@ return {
         	id : `${name}`,
         	data : chartConfig,
         	height: 200,
-        	width: '100%'
+        	width: '100%',
         });
     } else {
     var series = []
@@ -233,7 +233,7 @@ return {
   generatePieChartConfig:function ( obj ) {  // Helper function to generate a pie chart chartConfig
     var config = {
       type: obj.type,
-      backgroundColor: "#333",
+      backgroundColor: "#000",
       plot: {
         borderColor: "#2B313B",
         borderWidth: 2,
@@ -304,7 +304,7 @@ return {
 // Radar Viewer Helper Functions
 var radarScreen = (function() {
    var scene = new THREE.Scene();
-   var renderer = new THREE.WebGLRenderer();
+   var renderer = new THREE.WebGLRenderer({ alpha: true });
    var camera;
    var container;
    var controls;
@@ -331,12 +331,13 @@ return {
     //  this.renderer = new THREE.WebGLRenderer();
       container.appendChild( renderer.domElement );
       renderer.setSize( WIDTH , HEIGHT );
+      renderer.setClearColor("#00F", 0.10)
       camera = new THREE.PerspectiveCamera(55, WIDTH / HEIGHT, 1, 1e7);
       camera.position.set(0,0,100);
       camera.lookAt(new THREE.Vector3(0,0,0));
       camera.updateProjectionMatrix();
 	    renderer.render( scene, camera );
-      scene.background = new THREE.Color( 0x002100   );
+      //scene.background = new THREE.Color( "#00F" );
       scene.updateMatrixWorld();
       controls = new THREE.OrbitControls( camera, renderer.domElement );
       controls.enableDamping = true;
@@ -353,10 +354,13 @@ return {
       controls.addEventListener( 'change', this.render );
       scene.add( camera );
       var g_objSelf = new THREE.SphereGeometry( 1, 5, 5 );
-      var m_objSelf = new THREE.MeshBasicMaterial( { color: "#0F0", wireframe: false} );
+      var m_objSelf = new THREE.MeshBasicMaterial( { color: "#2b9cff", wireframe: false} );
       var mesh_objSelf = new THREE.Mesh( g_objSelf, m_objSelf );
 
       scene.add( mesh_objSelf );
+
+      // Backgound grid plane
+      this.drawGridPlane();
 
       // 10 unit radius
       this.drawCircle( 10 );
@@ -369,12 +373,6 @@ return {
 
       // 50 unit radius
       this.drawCircle( 100 );
-
-      // Vertical Orientation Circle
-      this.drawCircle( 200, {x:0, y:90}, "#262626" );
-
-      // Horizontal Orientation Circle
-      this.drawCircle( 200, {x:90, y:0}, "#262626" );
 
       // Zoom in and out buttons
       var zoom = this.drawZoomButtons();
@@ -401,11 +399,18 @@ return {
       this.render();
 
   }, /* End initializeScreen */
+  drawGridPlane: function() {
+    var gridHelper = new THREE.GridHelper( 800, 20, "#AAA", "#AAA" );
+    gridHelper.rotateX(this.radians( 90 ))
+    gridHelper.rotateY(this.radians( 90 ))
+    scene.add( gridHelper );
 
-  drawCircle: function( radius, angle={x:0,y:0}, lineColor="#00d100" ) {
+  }, /*  End drawGridPlane */
+
+  drawCircle: function( radius, angle={x:0,y:0}, lineColor="#FFF" ) {
       var segmentCount = 32,
       geometry = new THREE.Geometry(),
-      material = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 2  });
+      material = new THREE.LineBasicMaterial({ color: lineColor, linewidth: 3  });
 
       for (var i = 0; i <= segmentCount; i++) {
         var theta = (i / segmentCount) * Math.PI * 2;
@@ -501,7 +506,7 @@ return {
     }, /* End drawPointHeading */
     drawPointCoord: function( coord = new THREE.Vector3(0,0,0), name = "Unnamed", labeldata="" ) {
       var g_blip = new THREE.SphereGeometry( 1, 5, 5 );
-      var m_blip = new THREE.MeshBasicMaterial( { color: "#FF0", wireframe: false} );
+      var m_blip = new THREE.MeshBasicMaterial( { color: "#8cf5ff", wireframe: false} );
       var mesh_blip = new THREE.Mesh( g_blip, m_blip );
       mesh_blip.name = name;
       mesh_blip.position.set( coord.x, coord.y, coord.z );
